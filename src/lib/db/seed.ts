@@ -31,6 +31,51 @@ const STYLES = [
       "Vintage glamour portrait: soft warm side-lighting, dusty-pink damask wallpaper decorated with hung china plates, tailored tweed houndstooth outfit with pearl jewelry for women, a dark three-piece suit with pocket square for men, classic finger-wave or side-part hairstyles, closely posed and intimate.",
     sortOrder: 3,
   },
+  {
+    name: "Golden Hour Vintage",
+    description: "Backlit park stroll, preppy knitwear and silk, warm sunset glow.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-michael-obstoj-1772571864-33537251.jpg",
+    promptTemplate:
+      "Golden hour outdoor portrait: warm backlit sunset through trees, soft lens flare, preppy vintage wardrobe — a cream sweater vest and loose tie for men, a silky bias-cut slip dress for women, tousled hair, relaxed candid pose on a garden path.",
+    sortOrder: 4,
+  },
+  {
+    name: "70s Road Trip",
+    description: "Classic VW Beetle, countryside fields, retro sunglasses.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-necip-duman-3299706-16633191.jpg",
+    promptTemplate:
+      "1970s road-trip portrait: pastel-blue vintage car, wide countryside field backdrop under a bright cloudy sky, retro cat-eye or round sunglasses, high-waisted denim, suspenders, headscarf, warm saturated film color grading.",
+    sortOrder: 5,
+  },
+  {
+    name: "Rockabilly Night",
+    description: "Moody neon-lit nightclub, round shades, polka dots.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-pedrofurtadoo-30489699.jpg",
+    promptTemplate:
+      "Rockabilly night portrait: dark moody nightclub lighting with a purple neon rim light, round vintage sunglasses, suspenders over a white shirt, a polka-dot blouse tied with a red neckerchief, bold red lipstick, close warm framing.",
+    sortOrder: 6,
+  },
+  {
+    name: "Sunlit Editorial",
+    description: "Bright garden light, bold shades, polka-dot halter dress.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-thorl5-2154653228-33602625.jpg",
+    promptTemplate:
+      "Sunlit editorial portrait: bright dappled sunlight through green foliage, back-to-back pose, oversized black sunglasses, a black-and-white polka-dot halter dress, a knit vest over a collared shirt, warm golden color grading.",
+    sortOrder: 7,
+  },
+  {
+    name: "Parisian Pin-Up",
+    description: "Red beret, houndstooth, industrial red-door backdrop.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-javier-captures-the-world-297237582-14947641.jpg",
+    promptTemplate:
+      "Parisian pin-up portrait: weathered red industrial door backdrop, dramatic single-source lighting, a red beret and houndstooth pencil dress with red heels for women, a half-open white shirt with red suspenders for men, playful confident pose.",
+    sortOrder: 8,
+  },
 ];
 
 async function seed() {
