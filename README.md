@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Remynt
 
-## Getting Started
+Restyle a photo to match a reference look — while keeping the person's face
+recognizably the same. Next.js on Vercel, Neon Postgres + Neon Auth, Gemini
+(`gemini-3-pro-image` / Nano Banana Pro), Cloudflare R2, Stripe.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. `npm install`
+2. Copy `.env.example` to `.env.local` and fill in:
+   - **`DATABASE_URL`** — from your Neon project
+   - **Neon Auth keys** — enable Neon Auth on the Neon project, copy the three keys it generates
+   - **`GEMINI_API_KEY`** — Gemini API key with access to `gemini-3-pro-image`
+   - **AWS keys** — an IAM user scoped to `rekognition:CompareFaces` only
+   - **R2 keys** — a Cloudflare R2 bucket + API token
+   - **Stripe keys** — secret key and a webhook signing secret (create the webhook endpoint at `/api/webhooks/stripe` once deployed)
+3. Push the schema to Neon: `npm run db:push`
+4. Seed placeholder reference styles: `npm run db:seed`
+5. `npm run dev` and open [http://localhost:3000](http://localhost:3000)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What's stubbed vs. real
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- DB schema, auth, upload/style/generate/result flow, credit accounting, and
+  the face-match-confidence + one-time-free-regen logic are wired end to end.
+- `src/lib/db/seed.ts` reference styles use placeholder images/prompts — swap
+  in real curated reference photos and tuned `prompt_template` copy before
+  launch.
+- Stripe webhook's `CREDITS_BY_PRICE_ID` map (`src/app/api/webhooks/stripe/route.ts`)
+  is empty — fill it in once the actual Payment Links / credit packs exist.
+- `FREE_REGEN_CONFIDENCE_THRESHOLD` (`src/lib/faceMatch.ts`) is a starting
+  guess (78/100) — needs calibrating against real generations.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Mobile / Play Store plan
 
-## Learn More
+The app is mobile-first and a valid installable PWA (`src/app/manifest.ts`,
+plus generated icons at `/icon-192` and `/icon-512`). The plan is to wrap it
+as a **TWA (Trusted Web Activity)** via [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap)
+or [PWABuilder](https://www.pwabuilder.com/) once it's live on a real domain —
+that's a thin native shell that opens this deployed site, not a separate app
+codebase to maintain.
 
-To learn more about Next.js, take a look at the following resources:
+Before generating the TWA:
+1. Deploy to the real production domain.
+2. Fill in `src/app/.well-known/assetlinks.json/route.ts` with the Android
+   package name and the SHA256 signing fingerprint Bubblewrap/PWABuilder gives you.
+3. Swap the placeholder "R" icons in `src/app/icon-192/route.tsx` and
+   `icon-512/route.tsx` for real branding.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Not yet built (see product spec)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Admin UI for managing reference styles (currently DB-only via `db:seed`/`db:studio`)
+- Regenerate button currently always calls generation on the same style; UI
+  doesn't yet surface "this didn't match well, try again free" messaging
+  differently from a paid regenerate
