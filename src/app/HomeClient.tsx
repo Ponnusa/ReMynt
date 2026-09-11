@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@stackframe/stack";
+import { SignedIn, SignedOut, UserButton } from "@neondatabase/auth-ui";
 
 type ReferenceStyle = {
   id: string;
@@ -23,7 +23,6 @@ type Generation = {
 type Step = "upload" | "style" | "result";
 
 export default function HomeClient() {
-  const user = useUser();
   const router = useRouter();
   const [step, setStep] = useState<Step>("upload");
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -49,10 +48,6 @@ export default function HomeClient() {
 
   async function handleGenerate() {
     if (!sourceFile || !selectedStyleId) return;
-    if (!user) {
-      router.push("/handler/sign-in");
-      return;
-    }
 
     setIsGenerating(true);
     setError(null);
@@ -63,6 +58,10 @@ export default function HomeClient() {
 
     try {
       const res = await fetch("/api/generations", { method: "POST", body: formData });
+      if (res.status === 401) {
+        router.push("/auth/sign-in");
+        return;
+      }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "Generation failed");
@@ -83,6 +82,10 @@ export default function HomeClient() {
     setError(null);
     try {
       const res = await fetch(`/api/generations/${generation.id}/regenerate`, { method: "POST" });
+      if (res.status === 401) {
+        router.push("/auth/sign-in");
+        return;
+      }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "Regeneration failed");
@@ -99,16 +102,21 @@ export default function HomeClient() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 py-8">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold" style={{ color: "#e8734a" }}>
-          Remynt
-        </h1>
-        {user ? (
-          <span className="text-sm text-neutral-500">{user.primaryEmail}</span>
-        ) : (
-          <Link href="/handler/sign-in" className="text-sm font-medium underline">
+        <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="" className="h-8 w-8 rounded-lg" />
+          <h1 className="text-2xl font-bold" style={{ color: "#c026d3" }}>
+            Remynt
+          </h1>
+        </div>
+        <SignedIn>
+          <UserButton size="icon" />
+        </SignedIn>
+        <SignedOut>
+          <Link href="/auth/sign-in" className="text-sm font-medium underline">
             Sign in
           </Link>
-        )}
+        </SignedOut>
       </header>
 
       {error && (
@@ -147,7 +155,7 @@ export default function HomeClient() {
                 key={style.id}
                 onClick={() => setSelectedStyleId(style.id)}
                 className={`overflow-hidden rounded-lg border-2 text-left ${
-                  selectedStyleId === style.id ? "border-[#e8734a]" : "border-transparent"
+                  selectedStyleId === style.id ? "border-[#c026d3]" : "border-transparent"
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -163,7 +171,8 @@ export default function HomeClient() {
           <button
             disabled={!selectedStyleId || isGenerating}
             onClick={handleGenerate}
-            className="mt-auto w-full rounded-xl bg-[#e8734a] py-3 font-semibold text-white disabled:opacity-40"
+            className="mt-auto w-full rounded-xl py-3 font-semibold text-white disabled:opacity-40"
+            style={{ background: "linear-gradient(135deg, #d926c8, #7c3aed)" }}
           >
             {isGenerating ? "Generating…" : "Generate"}
           </button>
@@ -184,7 +193,8 @@ export default function HomeClient() {
             <a
               href={generation.resultImageUrl ?? "#"}
               download
-              className="w-full rounded-xl bg-[#e8734a] py-3 text-center font-semibold text-white"
+              className="w-full rounded-xl py-3 text-center font-semibold text-white"
+              style={{ background: "linear-gradient(135deg, #d926c8, #7c3aed)" }}
             >
               Download
             </a>

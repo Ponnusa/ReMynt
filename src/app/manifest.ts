@@ -10,12 +10,12 @@ export default function manifest(): MetadataRoute.Manifest {
       "Restyle your photo to match a reference look — while staying recognizably you.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f5f0e8",
-    theme_color: "#e8734a",
+    background_color: "#0a0a0f",
+    theme_color: "#c026d3",
     icons: [
-      { src: "/icon-192", sizes: "192x192", type: "image/png" },
-      { src: "/icon-512", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icon-512", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

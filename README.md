@@ -1,21 +1,39 @@
 # Remynt
 
 Restyle a photo to match a reference look — while keeping the person's face
-recognizably the same. Next.js on Vercel, Neon Postgres + Neon Auth, Gemini
-(`gemini-3-pro-image` / Nano Banana Pro), Cloudflare R2, Stripe.
+recognizably the same. Next.js on Vercel, Neon Postgres + Neon Auth (Managed
+Better Auth), Gemini (`gemini-3-pro-image` / Nano Banana Pro), Cloudflare R2,
+Stripe.
 
 ## Setup
 
 1. `npm install`
-2. Copy `.env.example` to `.env.local` and fill in:
-   - **`DATABASE_URL`** — from your Neon project
-   - **Neon Auth keys** — enable Neon Auth on the Neon project, copy the three keys it generates
+2. Link this app to your Neon project (creates `.neon`, `.env.local`, and
+   `neon.ts`): `npx neon@latest init --skip-template --project-id <your-project-id> --service auth --agent claude-code`
+   — or copy `.env.example` to `.env.local` by hand and fill in `DATABASE_URL`
+   and `NEON_AUTH_BASE_URL` from the Neon console.
+3. Generate a cookie secret and add it as `NEON_AUTH_COOKIE_SECRET` in
+   `.env.local` (32+ chars): `openssl rand -base64 32`
+4. Fill in the rest of `.env.local`:
    - **`GEMINI_API_KEY`** — Gemini API key with access to `gemini-3-pro-image`
    - **R2 keys** — a Cloudflare R2 bucket + API token
    - **Stripe keys** — secret key and a webhook signing secret (create the webhook endpoint at `/api/webhooks/stripe` once deployed)
-3. Push the schema to Neon: `npm run db:push`
-4. Seed placeholder reference styles: `npm run db:seed`
-5. `npm run dev` and open [http://localhost:3000](http://localhost:3000)
+5. Push the schema to Neon: `npm run db:push`
+6. Seed placeholder reference styles: `npm run db:seed`
+7. `npm run dev` and open [http://localhost:3000](http://localhost:3000)
+
+## Auth
+
+Uses Neon Auth (Managed Better Auth), not the older Stack-Auth-based
+integration — `neon-auth status` on this project reports provider
+`better_auth`. Wiring:
+- `src/lib/auth/server.ts` — server instance (`createNeonAuth`)
+- `src/lib/auth/client.ts` — client instance (`createAuthClient`)
+- `src/app/api/auth/[...path]/route.ts` — auth API handler
+- `src/app/auth/[path]/page.tsx` — sign-in/sign-up UI (`AuthView`)
+- `src/lib/users.ts` — `getOrCreateAppUser`, which upserts our own `users`
+  row (holding `credit_balance`) the first time a Neon Auth session is seen —
+  Neon Auth's own user table is separate and doesn't carry app-specific fields.
 
 ## What's stubbed vs. real
 
@@ -42,8 +60,9 @@ Rekognition-based implementation if picking this back up.
 ## Mobile / Play Store plan
 
 The app is mobile-first and a valid installable PWA (`src/app/manifest.ts`,
-plus generated icons at `/icon-192` and `/icon-512`). The plan is to wrap it
-as a **TWA (Trusted Web Activity)** via [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap)
+plus icons at `/icon-192.png` and `/icon-512.png`, generated from
+`pics/` via `node scripts/generate-icons.mjs`). The plan is to wrap it as a
+**TWA (Trusted Web Activity)** via [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap)
 or [PWABuilder](https://www.pwabuilder.com/) once it's live on a real domain —
 that's a thin native shell that opens this deployed site, not a separate app
 codebase to maintain.
@@ -52,8 +71,6 @@ Before generating the TWA:
 1. Deploy to the real production domain.
 2. Fill in `src/app/.well-known/assetlinks.json/route.ts` with the Android
    package name and the SHA256 signing fingerprint Bubblewrap/PWABuilder gives you.
-3. Swap the placeholder "R" icons in `src/app/icon-192/route.tsx` and
-   `icon-512/route.tsx` for real branding.
 
 ## Not yet built (see product spec)
 

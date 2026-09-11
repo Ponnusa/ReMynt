@@ -1,6 +1,5 @@
-import "dotenv/config";
-import { db } from "./index";
-import { referenceStyles } from "./schema";
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
 // Placeholder gallery so the app is browsable end to end. reference_image_url
 // values are placeholders — swap for real curated reference photos before
@@ -33,6 +32,11 @@ const STYLES = [
 ];
 
 async function seed() {
+  // Required after the dotenv config() above: static imports are hoisted
+  // above it, which would run db/index.ts's neon() before DATABASE_URL is set.
+  const { db } = await import("./index");
+  const { referenceStyles } = await import("./schema");
+
   for (const style of STYLES) {
     await db.insert(referenceStyles).values(style);
   }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { stackServerApp } from "@/stack";
+import { auth } from "@/lib/auth/server";
+import { getOrCreateAppUser } from "@/lib/users";
 import { db } from "@/lib/db";
 import { generations, users, creditTransactions } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
@@ -12,15 +13,15 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await stackServerApp.getUser();
-  if (!user) {
+  const { data: session } = await auth.getSession();
+  if (!session?.user) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
 
   const { id } = await params;
   const [current] = await db.select().from(generations).where(eq(generations.id, id));
 
-  if (!current || current.userId !== user.id) {
+  if (!current || current.userId !== session.user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -30,8 +31,8 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const [appUser] = await db.select().from(users).where(eq(users.id, user.id));
-  if (!appUser || appUser.creditBalance < CREDIT_COST_PER_GENERATION) {
+  const appUser = await getOrCreateAppUser(session.user.id, session.user.email);
+  if (appUser.creditBalance < CREDIT_COST_PER_GENERATION) {
     return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
   }
 
@@ -39,10 +40,10 @@ export async function POST(
     await tx
       .update(users)
       .set({ creditBalance: sql`${users.creditBalance} - ${CREDIT_COST_PER_GENERATION}` })
-      .where(eq(users.id, user.id));
+      .where(eq(users.id, session.user.id));
 
     await tx.insert(creditTransactions).values({
-      userId: user.id,
+      userId: session.user.id,
       amount: -CREDIT_COST_PER_GENERATION,
       type: "spend",
     });
@@ -52,7 +53,7 @@ export async function POST(
   const sourceImage = await downloadImage(root.sourceImageUrl);
 
   const generation = await runGeneration({
-    userId: user.id,
+    userId: session.user.id,
     referenceStyleId: current.referenceStyleId,
     sourceImage,
     sourceMimeType: root.sourceMimeType,
