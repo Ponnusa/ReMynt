@@ -76,6 +76,24 @@ const STYLES = [
       "Parisian pin-up portrait: weathered red industrial door backdrop, dramatic single-source lighting, a red beret and houndstooth pencil dress with red heels for women, a half-open white shirt with red suspenders for men, playful confident pose.",
     sortOrder: 8,
   },
+  {
+    name: "Soft Focus Romance",
+    description: "Warm backlit close-up, soft bokeh, tender and intimate.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/lucid-origin_A_loving_couple_their_eyes_locked_in_an_intimate_gaze_hands_gently_intertwined._-0.jpg",
+    promptTemplate:
+      "Golden hour romantic close-up: warm backlit sunset glow, softly blurred bokeh background, foreheads gently touching in an intimate gaze, tender candid expressions, soft natural film-like color grading.",
+    sortOrder: 9,
+  },
+  {
+    name: "Sunny Meadow Family",
+    description: "Bright natural light, grassy outdoor setting, warm and candid.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/lucid-origin_family_picture_with_dad_mom_with_2_daughters_in_outdoor_settings-0.jpg",
+    promptTemplate:
+      "Bright natural-light family portrait: soft outdoor daylight, blurred green grass and trees in the background, relaxed seated pose on the grass, warm candid smiles, gentle warm color grading.",
+    sortOrder: 10,
+  },
 ];
 
 async function seed() {
