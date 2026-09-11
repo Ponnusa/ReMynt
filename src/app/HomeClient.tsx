@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignedIn, SignedOut, UserButton } from "@neondatabase/auth-ui";
+import { SAMPLE_PHOTOS } from "@/lib/samplePhotos";
 
 type ReferenceStyle = {
   id: string;
@@ -44,6 +45,19 @@ export default function HomeClient() {
     setSourceFile(file);
     setSourcePreview(URL.createObjectURL(file));
     setStep("style");
+  }
+
+  async function handleSamplePhotoSelected(id: string) {
+    setError(null);
+    try {
+      const res = await fetch(`/api/sample-photos/${id}`);
+      if (!res.ok) throw new Error("Couldn't load sample photo");
+      const blob = await res.blob();
+      const file = new File([blob], `sample-${id}.jpg`, { type: blob.type || "image/jpeg" });
+      handleFileSelected(file);
+    } catch {
+      setError("Couldn't load sample photo");
+    }
   }
 
   async function handleGenerate() {
@@ -141,6 +155,25 @@ export default function HomeClient() {
               }}
             />
           </label>
+          <div className="flex w-full flex-col items-center gap-2">
+            <p className="text-sm text-neutral-500">Or try a sample photo</p>
+            <div className="flex gap-3">
+              {SAMPLE_PHOTOS.map((photo) => (
+                <button
+                  key={photo.id}
+                  onClick={() => handleSamplePhotoSelected(photo.id)}
+                  className="overflow-hidden rounded-lg border-2 border-transparent hover:border-[#c026d3]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/sample-photos/${photo.id}`}
+                    alt={photo.label}
+                    className="h-20 w-20 object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
       )}
 
