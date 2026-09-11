@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { generations, users, creditTransactions } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { downloadImage } from "@/lib/storage";
-import { runGeneration, isFreeRegenAvailable, withSignedUrls } from "@/lib/generation";
+import { runGeneration, withSignedUrls } from "@/lib/generation";
 
 const CREDIT_COST_PER_GENERATION = 1;
 
@@ -30,27 +30,23 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const isFree = await isFreeRegenAvailable(id);
-
-  if (!isFree) {
-    const [appUser] = await db.select().from(users).where(eq(users.id, user.id));
-    if (!appUser || appUser.creditBalance < CREDIT_COST_PER_GENERATION) {
-      return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
-    }
-
-    await db.transaction(async (tx) => {
-      await tx
-        .update(users)
-        .set({ creditBalance: sql`${users.creditBalance} - ${CREDIT_COST_PER_GENERATION}` })
-        .where(eq(users.id, user.id));
-
-      await tx.insert(creditTransactions).values({
-        userId: user.id,
-        amount: -CREDIT_COST_PER_GENERATION,
-        type: "spend",
-      });
-    });
+  const [appUser] = await db.select().from(users).where(eq(users.id, user.id));
+  if (!appUser || appUser.creditBalance < CREDIT_COST_PER_GENERATION) {
+    return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
   }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ creditBalance: sql`${users.creditBalance} - ${CREDIT_COST_PER_GENERATION}` })
+      .where(eq(users.id, user.id));
+
+    await tx.insert(creditTransactions).values({
+      userId: user.id,
+      amount: -CREDIT_COST_PER_GENERATION,
+      type: "spend",
+    });
+  });
 
   // Always regenerate from the original upload, not from a previous stylized result.
   const sourceImage = await downloadImage(root.sourceImageUrl);
@@ -62,12 +58,8 @@ export async function POST(
     sourceMimeType: root.sourceMimeType,
     attemptNumber: current.attemptNumber + 1,
     parentGenerationId: rootId,
-    creditCharged: !isFree,
+    creditCharged: true,
   });
-
-  if (isFree) {
-    await db.update(generations).set({ freeRegenUsed: true }).where(eq(generations.id, rootId));
-  }
 
   return NextResponse.json(await withSignedUrls(generation));
 }

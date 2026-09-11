@@ -11,7 +11,6 @@ recognizably the same. Next.js on Vercel, Neon Postgres + Neon Auth, Gemini
    - **`DATABASE_URL`** — from your Neon project
    - **Neon Auth keys** — enable Neon Auth on the Neon project, copy the three keys it generates
    - **`GEMINI_API_KEY`** — Gemini API key with access to `gemini-3-pro-image`
-   - **AWS keys** — an IAM user scoped to `rekognition:CompareFaces` only
    - **R2 keys** — a Cloudflare R2 bucket + API token
    - **Stripe keys** — secret key and a webhook signing secret (create the webhook endpoint at `/api/webhooks/stripe` once deployed)
 3. Push the schema to Neon: `npm run db:push`
@@ -20,15 +19,25 @@ recognizably the same. Next.js on Vercel, Neon Postgres + Neon Auth, Gemini
 
 ## What's stubbed vs. real
 
-- DB schema, auth, upload/style/generate/result flow, credit accounting, and
-  the face-match-confidence + one-time-free-regen logic are wired end to end.
+- DB schema, auth, upload/style/generate/result flow, and credit accounting
+  are wired end to end. Regenerate always spends a credit (no free-regen logic
+  for v1 — see below).
 - `src/lib/db/seed.ts` reference styles use placeholder images/prompts — swap
   in real curated reference photos and tuned `prompt_template` copy before
   launch.
 - Stripe webhook's `CREDITS_BY_PRICE_ID` map (`src/app/api/webhooks/stripe/route.ts`)
   is empty — fill it in once the actual Payment Links / credit packs exist.
-- `FREE_REGEN_CONFIDENCE_THRESHOLD` (`src/lib/faceMatch.ts`) is a starting
-  guess (78/100) — needs calibrating against real generations.
+
+## Face-match confidence (deferred, not built)
+
+The original design called for scoring each result against the source photo
+(AWS Rekognition `CompareFaces`) and granting one free regen when the face
+didn't match well. Dropped for v1 to avoid a new AWS account before launch —
+regenerate always costs a credit for now. The `generations` table still has
+`confidence_score`, `attempt_number`, `parent_generation_id`, and
+`free_regen_used` columns so this can be added later without a schema
+redesign; see `git log` around the initial scaffold commit for the original
+Rekognition-based implementation if picking this back up.
 
 ## Mobile / Play Store plan
 
