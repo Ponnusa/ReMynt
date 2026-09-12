@@ -94,6 +94,24 @@ const STYLES = [
       "Bright natural-light family portrait: soft outdoor daylight, blurred green grass and trees in the background, relaxed seated pose on the grass, warm candid smiles, gentle warm color grading.",
     sortOrder: 10,
   },
+  {
+    name: "Boho Wedding Golden Hour",
+    description: "Dried-flower bouquet, warm backlight, wrought-iron garden fence.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-jonathanborba-9377799.jpg",
+    promptTemplate:
+      "Boho wedding portrait: warm golden-hour backlight through pine trees, a flowing lace wedding dress for the bride with a dried-flower bouquet, a plain white button-down shirt with a matching floral boutonniere for the groom, softly blurred garden background with a wrought-iron fence, warm intimate smiling expressions.",
+    sortOrder: 11,
+  },
+  {
+    name: "Garden Wedding Elegance",
+    description: "White floral archway, beige tuxedo, classic ballgown with veil.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-samet-tecimen-523842701-38930323.jpg",
+    promptTemplate:
+      "Elegant garden wedding portrait: white stone archway draped with vivid red bougainvillea flowers, a beige tuxedo with matching bow tie for the groom, a strapless white ballgown with long veil, pearl necklace, and satin gloves for the bride, soft overcast daylight, romantic close pose.",
+    sortOrder: 12,
+  },
 ];
 
 async function seed() {
