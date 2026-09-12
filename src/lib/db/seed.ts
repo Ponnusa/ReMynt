@@ -112,6 +112,15 @@ const STYLES = [
       "Elegant garden wedding portrait: white stone archway draped with vivid red bougainvillea flowers, a beige tuxedo with matching bow tie for the groom, a strapless white ballgown with long veil, pearl necklace, and satin gloves for the bride, soft overcast daylight, romantic close pose.",
     sortOrder: 12,
   },
+  {
+    name: "Autumn Family Portrait",
+    description: "Vivid magenta foliage backdrop, cozy knitwear, close family embrace.",
+    referenceImageUrl:
+      "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/pexels-sofia-shultz-59970339-8015551.jpg",
+    promptTemplate:
+      "Autumn family portrait: vivid magenta and burgundy foliage backdrop, cozy knit sweaters and cardigans in mustard, navy, and burnt orange, close warm embrace with children draped over parents' shoulders, soft natural daylight, warm candid smiles.",
+    sortOrder: 13,
+  },
 ];
 
 async function seed() {
