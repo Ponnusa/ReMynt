@@ -33,34 +33,50 @@ export function parseGenerationOptions(formData: FormData): GenerationOptions {
 // into its background — identity preservation got noticeably worse (verified
 // against live output), because compositing across two images makes the
 // model reconstruct the face in a new scene rather than edit existing pixels
-// in place. Reverted to text-only style guidance, which held up much better.
-function buildPrompt(styleDescription: string, options: GenerationOptions): string {
+// in place. Text-only style guidance held up much better, so reference
+// styles' prompt_template is a structured text spec (camera/color/texture/
+// composition/avoid), never an image sent to the model.
+function buildPrompt(styleSpec: string, options: GenerationOptions): string {
   const backgroundInstruction =
     options.backgroundMode === "original"
-      ? "Change only: clothing, lighting, and color grading to match the reference style. Do not change the background — keep the original background exactly as photographed."
-      : "Change only: clothing, background, lighting, color grading, and atmosphere to match the reference style.";
+      ? "Change only: clothing, lighting, and color grading to match the style below. Do not change the background — keep the original background exactly as photographed."
+      : "Change the background, clothing, lighting, color grading, and atmosphere to match the style below.";
 
-  const styleInstruction =
+  const strengthInstruction =
     options.styleStrength === "subtle"
-      ? `Apply this reference style subtly — a light, tasteful nod to it rather than a dramatic transformation: ${styleDescription}.`
-      : `Apply this reference style: ${styleDescription}.`;
+      ? "Apply this style subtly — a light, tasteful nod to it rather than a dramatic transformation."
+      : "Apply this style fully and boldly, closely matching its overall mood and aesthetic.";
 
   return `
-Edit this exact photo. Preserve the exact facial identity, face shape,
-skin tone, and apparent age of every person — do not regenerate or
-reinterpret their faces.
+Edit this exact photograph. Do not generate a new photo from scratch — modify the existing one.
 
-${styleInstruction}
+Preserve exactly, for every person in the photo:
+- facial identity, face shape, and recognizable features
+- apparent age, skin tone, and body proportions
+- their pose, expression, and position relative to each other
+- the total number of people and the overall framing
 
-${backgroundInstruction} Keep the same number of
-people, poses, expressions, and framing as the original photo.
+${styleSpec}
+
+${backgroundInstruction}
+
+${strengthInstruction}
+
+The result should feel like a real photograph in this style, not a modern
+photo with a filter applied, and not an obviously AI-generated image.
+
+Do not, under any circumstances:
+- change anyone's identity, facial structure, or facial features
+- beautify, reshape, slim, or de-age any face
+- make anyone look like a different person
+- add people, remove people, or change who is in the photo
 `.trim();
 }
 
 export async function generateStyledImage(
   sourceImage: Buffer,
   sourceMimeType: string,
-  styleDescription: string,
+  styleSpec: string,
   options: GenerationOptions = DEFAULT_GENERATION_OPTIONS
 ): Promise<Buffer> {
   const response = await ai.models.generateContent({
@@ -69,7 +85,7 @@ export async function generateStyledImage(
       {
         role: "user",
         parts: [
-          { text: buildPrompt(styleDescription, options) },
+          { text: buildPrompt(styleSpec, options) },
           {
             inlineData: {
               mimeType: sourceMimeType,
