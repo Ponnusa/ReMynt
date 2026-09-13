@@ -364,6 +364,38 @@ Avoid:
 `.trim(),
     sortOrder: 13,
   },
+  {
+    name: "1980s Family Album",
+    description: "Consumer 35mm film, direct flash, authentic family-snapshot feel.",
+    referenceImageUrl: "https://pub-ca784163fe614f62b1a3ebb8fe9ad1d3.r2.dev/temp/Firefly.jpg",
+    promptTemplate: `
+STYLE: 1980s Family Album
+
+Camera & Lighting:
+- direct on-camera flash
+- consumer 35mm film photography
+
+Color & Texture:
+- warm, slightly faded colors
+- visible but subtle 35mm film grain
+- mild lens softness
+- realistic skin texture, imperfect amateur photography
+
+Wardrobe & Hair:
+- authentic 1980s clothing and hairstyles
+
+Composition:
+- casual, natural pose, standing or sitting together outside an ordinary suburban house
+- slight smiles, unposed family-snapshot feel
+
+Avoid:
+- cinematic or fashion-photography look
+- modern clothing, hairstyles, or smartphones
+- contemporary architecture
+- overly polished or AI-generated appearance
+`.trim(),
+    sortOrder: 14,
+  },
 ];
 
 async function seed() {
