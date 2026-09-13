@@ -2,7 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { generations, referenceStyles } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { uploadImage, getSignedImageUrl, fetchExternalImage } from "@/lib/storage";
+import { uploadImage, getSignedImageUrl } from "@/lib/storage";
 import { generateStyledImage, DEFAULT_GENERATION_OPTIONS, type GenerationOptions } from "@/lib/gemini";
 
 type RunGenerationArgs = {
@@ -56,13 +56,9 @@ export async function runGeneration({
     .returning();
 
   try {
-    const referenceImage = await fetchExternalImage(style.referenceImageUrl);
-
     const resultBuffer = await generateStyledImage(
       sourceImage,
       sourceMimeType,
-      referenceImage.buffer,
-      referenceImage.mimeType,
       style.promptTemplate,
       options
     );

@@ -28,42 +28,38 @@ export function parseGenerationOptions(formData: FormData): GenerationOptions {
   };
 }
 
+// Single-image, edit-in-place framing. An earlier version sent the reference
+// style photo as a second image and asked Gemini to composite the person
+// into its background — identity preservation got noticeably worse (verified
+// against live output), because compositing across two images makes the
+// model reconstruct the face in a new scene rather than edit existing pixels
+// in place. Reverted to text-only style guidance, which held up much better.
 function buildPrompt(styleDescription: string, options: GenerationOptions): string {
   const backgroundInstruction =
     options.backgroundMode === "original"
-      ? "Do not change the background — keep image 1's original background exactly as photographed. Change only: clothing, lighting, and color grading to match image 2's style."
-      : "Change the background and setting to match image 2 — recreate image 2's background, lighting, and atmosphere as closely as possible. Image 2 is a style/background reference only: never copy any person, face, or body from it into the output.";
+      ? "Change only: clothing, lighting, and color grading to match the reference style. Do not change the background — keep the original background exactly as photographed."
+      : "Change only: clothing, background, lighting, color grading, and atmosphere to match the reference style.";
 
-  const strengthInstruction =
+  const styleInstruction =
     options.styleStrength === "subtle"
-      ? "Apply the reference style subtly — a light, tasteful nod to it rather than a dramatic transformation."
-      : "Apply the reference style fully and boldly, closely matching its overall mood and aesthetic.";
+      ? `Apply this reference style subtly — a light, tasteful nod to it rather than a dramatic transformation: ${styleDescription}.`
+      : `Apply this reference style: ${styleDescription}.`;
 
   return `
-You are given two images.
+Edit this exact photo. Preserve the exact facial identity, face shape,
+skin tone, and apparent age of every person — do not regenerate or
+reinterpret their faces.
 
-Image 1: a real photo of one or more people. Preserve the exact facial
-identity, face shape, skin tone, and apparent age of every person in image 1
-— do not regenerate or reinterpret their faces. Keep the same number of
-people, poses, expressions, and framing as image 1.
+${styleInstruction}
 
-Image 2: a style reference photo, used only for background, lighting,
-wardrobe, and color-grading inspiration — never for identity. Do not include
-any person from image 2 in the output.
-
-Style guidance: ${styleDescription}
-
-${backgroundInstruction}
-
-${strengthInstruction}
+${backgroundInstruction} Keep the same number of
+people, poses, expressions, and framing as the original photo.
 `.trim();
 }
 
 export async function generateStyledImage(
   sourceImage: Buffer,
   sourceMimeType: string,
-  referenceImage: Buffer,
-  referenceMimeType: string,
   styleDescription: string,
   options: GenerationOptions = DEFAULT_GENERATION_OPTIONS
 ): Promise<Buffer> {
@@ -80,17 +76,11 @@ export async function generateStyledImage(
               data: sourceImage.toString("base64"),
             },
           },
-          {
-            inlineData: {
-              mimeType: referenceMimeType,
-              data: referenceImage.toString("base64"),
-            },
-          },
         ],
       },
     ],
     config: {
-      temperature: options.styleStrength === "subtle" ? 0.15 : 0.3,
+      temperature: options.styleStrength === "subtle" ? 0.2 : 0.25,
     },
   });
 
