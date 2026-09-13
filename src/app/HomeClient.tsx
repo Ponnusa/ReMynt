@@ -130,30 +130,58 @@ export default function HomeClient() {
       )}
 
       {step === "upload" && (
-        <section className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-          <p className="text-neutral-600">
-            Upload a photo — solo, couple, or family — and give it a new look
-            while staying recognizably you.
-          </p>
-          <label className="w-full cursor-pointer rounded-xl border-2 border-dashed border-neutral-300 px-6 py-12 text-center hover:border-neutral-400">
-            <span className="font-medium">Tap to upload a photo</span>
-            <input
-              type="file"
-              accept="image/jpeg,image/png"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFileSelected(file);
-              }}
-            />
-          </label>
+        <section className="flex flex-1 flex-col gap-8">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <p className="text-neutral-600">
+              Upload a photo — solo, couple, or family — and give it a new look
+              while staying recognizably you.
+            </p>
+            <label
+              className="w-full cursor-pointer rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors"
+              style={{ borderColor: "#e9b8ef" }}
+            >
+              <span className="font-semibold" style={{ color: "#c026d3" }}>
+                Tap to upload a photo
+              </span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelected(file);
+                }}
+              />
+            </label>
+          </div>
+
+          {styles.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-neutral-500">Explore looks</p>
+              <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
+                {styles.map((style) => (
+                  <div key={style.id} className="w-24 flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={style.referenceImageUrl}
+                      alt={style.name}
+                      className="h-24 w-24 rounded-lg object-cover"
+                    />
+                    <p className="mt-1 truncate text-xs text-neutral-600">{style.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
 
       {step === "style" && sourcePreview && (
         <section className="flex flex-1 flex-col gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={sourcePreview} alt="Your photo" className="aspect-square w-full rounded-xl object-cover" />
+          <div className="flex max-h-80 w-full items-center justify-center overflow-hidden rounded-xl bg-neutral-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={sourcePreview} alt="Your photo" className="max-h-80 w-full object-contain" />
+          </div>
           <h2 className="font-semibold">Choose a style</h2>
           <div className="grid grid-cols-2 gap-3">
             {styles.map((style) => (
@@ -234,11 +262,15 @@ export default function HomeClient() {
       {step === "result" && generation && (
         <section className="flex flex-1 flex-col gap-4">
           <div className="grid grid-cols-2 gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={generation.sourceImageUrl} alt="Before" className="aspect-square w-full rounded-xl object-cover" />
+            <div className="flex h-56 items-center justify-center overflow-hidden rounded-xl bg-neutral-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={generation.sourceImageUrl} alt="Before" className="h-full w-full object-contain" />
+            </div>
             {generation.resultImageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={generation.resultImageUrl} alt="After" className="aspect-square w-full rounded-xl object-cover" />
+              <div className="flex h-56 items-center justify-center overflow-hidden rounded-xl bg-neutral-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={generation.resultImageUrl} alt="After" className="h-full w-full object-contain" />
+              </div>
             )}
           </div>
           <div className="mt-auto flex flex-col gap-2">
