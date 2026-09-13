@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { users, creditTransactions } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { runGeneration, withSignedUrls } from "@/lib/generation";
+import { parseGenerationOptions } from "@/lib/gemini";
 
 const CREDIT_COST_PER_GENERATION = 1;
 
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
   });
 
   const sourceImage = Buffer.from(await file.arrayBuffer());
+  const options = parseGenerationOptions(formData);
 
   const generation = await runGeneration({
     userId,
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
     sourceImage,
     sourceMimeType: file.type,
     creditCharged: true,
+    options,
   });
 
   return NextResponse.json(await withSignedUrls(generation));

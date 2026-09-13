@@ -54,3 +54,18 @@ export async function downloadImage(key: string): Promise<Buffer> {
   }
   return Buffer.concat(chunks);
 }
+
+// Reference styles store a full external URL (R2 public dev domain today,
+// could be any host later), not an object key in our bucket — plain fetch
+// rather than the S3 SDK.
+export async function fetchExternalImage(
+  url: string
+): Promise<{ buffer: Buffer; mimeType: string }> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch reference image: ${url} (${res.status})`);
+  }
+  const buffer = Buffer.from(await res.arrayBuffer());
+  const mimeType = res.headers.get("content-type") ?? "image/jpeg";
+  return { buffer, mimeType };
+}

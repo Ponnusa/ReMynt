@@ -21,6 +21,8 @@ type Generation = {
 };
 
 type Step = "upload" | "style" | "result";
+type BackgroundMode = "reference" | "original";
+type StyleStrength = "subtle" | "full";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -29,6 +31,8 @@ export default function HomeClient() {
   const [sourcePreview, setSourcePreview] = useState<string | null>(null);
   const [styles, setStyles] = useState<ReferenceStyle[]>([]);
   const [selectedStyleId, setSelectedStyleId] = useState<string | null>(null);
+  const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("reference");
+  const [styleStrength, setStyleStrength] = useState<StyleStrength>("full");
   const [generation, setGeneration] = useState<Generation | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +59,8 @@ export default function HomeClient() {
     const formData = new FormData();
     formData.append("sourceImage", sourceFile);
     formData.append("referenceStyleId", selectedStyleId);
+    formData.append("backgroundMode", backgroundMode);
+    formData.append("styleStrength", styleStrength);
 
     try {
       const res = await fetch("/api/generations", { method: "POST", body: formData });
@@ -168,6 +174,52 @@ export default function HomeClient() {
               </button>
             ))}
           </div>
+
+          <div className="flex flex-col gap-3 rounded-xl border border-neutral-200 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium">Background</span>
+              <div className="flex overflow-hidden rounded-lg border border-neutral-300 text-xs">
+                <button
+                  onClick={() => setBackgroundMode("reference")}
+                  className={`px-3 py-1.5 font-medium ${
+                    backgroundMode === "reference" ? "bg-[#c026d3] text-white" : "text-neutral-600"
+                  }`}
+                >
+                  Match style photo
+                </button>
+                <button
+                  onClick={() => setBackgroundMode("original")}
+                  className={`px-3 py-1.5 font-medium ${
+                    backgroundMode === "original" ? "bg-[#c026d3] text-white" : "text-neutral-600"
+                  }`}
+                >
+                  Keep mine
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium">Style strength</span>
+              <div className="flex overflow-hidden rounded-lg border border-neutral-300 text-xs">
+                <button
+                  onClick={() => setStyleStrength("subtle")}
+                  className={`px-3 py-1.5 font-medium ${
+                    styleStrength === "subtle" ? "bg-[#c026d3] text-white" : "text-neutral-600"
+                  }`}
+                >
+                  Subtle
+                </button>
+                <button
+                  onClick={() => setStyleStrength("full")}
+                  className={`px-3 py-1.5 font-medium ${
+                    styleStrength === "full" ? "bg-[#c026d3] text-white" : "text-neutral-600"
+                  }`}
+                >
+                  Full
+                </button>
+              </div>
+            </div>
+          </div>
+
           <button
             disabled={!selectedStyleId || isGenerating}
             onClick={handleGenerate}

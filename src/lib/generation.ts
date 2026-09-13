@@ -2,8 +2,8 @@ import "server-only";
 import { db } from "@/lib/db";
 import { generations, referenceStyles } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { uploadImage, getSignedImageUrl } from "@/lib/storage";
-import { generateStyledImage } from "@/lib/gemini";
+import { uploadImage, getSignedImageUrl, fetchExternalImage } from "@/lib/storage";
+import { generateStyledImage, DEFAULT_GENERATION_OPTIONS, type GenerationOptions } from "@/lib/gemini";
 
 type RunGenerationArgs = {
   userId: string;
@@ -13,6 +13,7 @@ type RunGenerationArgs = {
   attemptNumber?: number;
   parentGenerationId?: string;
   creditCharged: boolean;
+  options?: GenerationOptions;
 };
 
 /**
@@ -28,6 +29,7 @@ export async function runGeneration({
   attemptNumber = 1,
   parentGenerationId,
   creditCharged,
+  options = DEFAULT_GENERATION_OPTIONS,
 }: RunGenerationArgs) {
   const [style] = await db
     .select()
@@ -49,14 +51,20 @@ export async function runGeneration({
       attemptNumber,
       parentGenerationId,
       creditCharged,
+      options,
     })
     .returning();
 
   try {
+    const referenceImage = await fetchExternalImage(style.referenceImageUrl);
+
     const resultBuffer = await generateStyledImage(
       sourceImage,
       sourceMimeType,
-      style.promptTemplate
+      referenceImage.buffer,
+      referenceImage.mimeType,
+      style.promptTemplate,
+      options
     );
     const resultKey = await uploadImage(resultBuffer, "image/png", "results");
 

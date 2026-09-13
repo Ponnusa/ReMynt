@@ -57,6 +57,7 @@ export async function POST(
     attemptNumber: current.attemptNumber + 1,
     parentGenerationId: rootId,
     creditCharged: true,
+    options: current.options,
   });
 
   return NextResponse.json(await withSignedUrls(generation));

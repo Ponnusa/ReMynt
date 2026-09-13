@@ -7,7 +7,15 @@ import {
   timestamp,
   uuid,
   pgEnum,
+  jsonb,
 } from "drizzle-orm/pg-core";
+
+// Kept in sync with GenerationOptions in src/lib/gemini.ts by hand — not
+// imported directly to avoid coupling the schema to that module.
+type GenerationOptions = {
+  backgroundMode: "reference" | "original";
+  styleStrength: "subtle" | "full";
+};
 
 // App-side user row, keyed by the Neon Auth (Stack Auth) user id.
 // Neon Auth syncs its own copy of user records into `neon_auth.users_sync`;
@@ -61,6 +69,13 @@ export const generations = pgTable("generations", {
   parentGenerationId: uuid("parent_generation_id"),
   freeRegenUsed: boolean("free_regen_used").notNull().default(false),
   creditCharged: boolean("credit_charged").notNull().default(true),
+
+  // What the user chose for this attempt (background mode, style strength).
+  // jsonb rather than one column per toggle so new options don't need a migration.
+  options: jsonb("options").$type<GenerationOptions>().notNull().default({
+    backgroundMode: "reference",
+    styleStrength: "full",
+  }),
 
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
